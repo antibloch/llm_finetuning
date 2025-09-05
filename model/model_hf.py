@@ -8,10 +8,11 @@ from utils.param_counter import count_parameters
 from utils.vram_instrumentation import vram_checkpoint, VRAMTracker, print_vram_summary
 
 
-def get_model_stuff(config, do_lora=True):
+def get_model_stuff(config, do_lora=True, do_instrument=True):
     MODEL_NAME = config['MODEL_NAME']
-    tracker = VRAMTracker()
-    tracker.snapshot("Before loading model and tokenizer")
+    if do_instrument:
+        tracker = VRAMTracker()
+        tracker.snapshot("Before loading model and tokenizer")
 
 
     # load tokenizer
@@ -54,11 +55,11 @@ def get_model_stuff(config, do_lora=True):
         model.print_trainable_parameters()
 
 
-    # instrument params
-    tracker.snapshot("After loading model and tokenizer")
-    tracker.print_history()
-    count_parameters(model)
-    print_vram_summary()
+    if do_instrument:
+        tracker.snapshot("After loading model and tokenizer")
+        tracker.print_history()
+        count_parameters(model)
+        print_vram_summary()
 
 
     return model, tokenizer

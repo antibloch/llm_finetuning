@@ -3,7 +3,7 @@ from utils.param_counter import count_parameters
 from utils.vram_instrumentation import vram_checkpoint, VRAMTracker, print_vram_summary
 
 
-def get_model_stuff(config, do_lora=True):
+def get_model_stuff(config, do_lora=True, do_instrument=True):
     # some hyperparameters
     MODEL_NAME = config['MODEL_NAME']
     max_seq_length = config['max_seq_length']
@@ -11,8 +11,9 @@ def get_model_stuff(config, do_lora=True):
     load_in_4bit = config['load_in_4bit']
     load_in_8bit = config['load_in_8bit']
 
-    tracker = VRAMTracker()
-    tracker.snapshot("Before loading model and tokenizer")
+    if do_instrument:
+        tracker = VRAMTracker()
+        tracker.snapshot("Before loading model and tokenizer")
 
     # Load the model and tokenizer using Unsloth
     model, tokenizer = FastLanguageModel.from_pretrained(
@@ -44,11 +45,11 @@ def get_model_stuff(config, do_lora=True):
         )
 
 
-    # instrument params
-    tracker.snapshot("After loading model and tokenizer")
-    tracker.print_history()
-    count_parameters(model)
-    print_vram_summary()
+    if do_instrument:
+        tracker.snapshot("After loading model and tokenizer")
+        tracker.print_history()
+        count_parameters(model)
+        print_vram_summary()
 
 
     return model, tokenizer

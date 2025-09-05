@@ -1,6 +1,5 @@
 from trl import SFTTrainer, SFTConfig
-from utils.param_counter import count_parameters
-from utils.vram_instrumentation import VRAMMonitorCallback, print_vram_summary
+from utils.vram_instrumentation import VRAMMonitorCallback
 
 
 def train_with_trl(model, tokenizer, dataset, config, do_instrument=True):

@@ -2,8 +2,8 @@ MODEL_NAME: "meta-llama/Meta-Llama-3-8B-Instruct" # Huggingface or unsloth model
 DATASET_NAME: "commonsense_qa" # Dataset name from Huggingface datasets
 max_seq_length: 2048 # Maximum sequence length for the model
 dtype: null # Autodetects for your GPU
-load_in_4bit: true # Use 4-bit quantization
-load_in_8bit: false # Use 8-bit quantization
+load_in_4bit: true # Use 4-bit quantization (for unsloth models)
+load_in_8bit: false # Use 8-bit quantization (for unsloth models)
 
 # LoRA specific parameters
 lora_alpha: 16
