@@ -1,8 +1,7 @@
 import torch
 from transformers import (
     AutoModelForCausalLM,
-    AutoTokenizer,
-    TrainerCallback
+    AutoTokenizer
 )
 from utils.param_counter import count_parameters
 from utils.vram_instrumentation import vram_checkpoint, VRAMTracker, print_vram_summary

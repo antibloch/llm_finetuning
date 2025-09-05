@@ -1,7 +1,7 @@
 from model.model_unsloth import *
 from dataset.csqa import load_dataset
 from utils.param_counter import *
-from train.trl_trainer import *
+from train.torch_trainer import *
 import yaml
 
 
@@ -20,8 +20,7 @@ def main():
     dataset = load_dataset(tokenizer, split='train')
 
     # Train the model using TRL's SFTTrainer
-    train_with_trl(model, tokenizer, dataset, config)
-
+    train_with_torch(model, tokenizer, dataset, config, do_instrument=True)
 
 
 if __name__ == "__main__":

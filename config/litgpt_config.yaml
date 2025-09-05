@@ -1,0 +1,24 @@
+# Data Configuration
+data:
+  class_path: litgpt.data.JSON
+  init_args:
+    json_path: "data/commonsense_qa"
+
+# Training Configuration
+train:
+  epochs: 1
+  global_batch_size: 16
+  micro_batch_size: 1
+  max_seq_length: 1024
+  save_interval: 1000 # Save a checkpoint every 1000 steps
+
+# Optimizer Configuration
+optimizer:
+  class_path: torch.optim.AdamW
+  init_args:
+    lr: 1e-5
+
+# General Configuration
+out_dir: "litgpt_out"
+precision: "bf16-true"
+devices: 4
