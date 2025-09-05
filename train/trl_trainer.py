@@ -26,6 +26,7 @@ def train_with_trl(model, tokenizer, dataset, config, do_instrument=True):
             output_dir = output_dir,
             report_to = "none",
             dataset_text_field="text",
+            max_length = max_seq_length,
         )
     
     if do_instrument:
@@ -39,7 +40,6 @@ def train_with_trl(model, tokenizer, dataset, config, do_instrument=True):
         model = model,
         processing_class = tokenizer,
         train_dataset = dataset,
-        max_seq_length = max_seq_length,
         args = sft_config,
         callbacks = [callback] if do_instrument else None,
     )
