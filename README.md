@@ -63,6 +63,28 @@ python dataset/litgpt_csqa.py
 litgpt finetune_full meta-llama/Meta-Llama-3-8B-Instruct --config config.yaml
 ```
 
+
+## Running LoRA Finetuning
+
+### Pre evaluation of performance of base model
+```code
+python main_pre_eval.py --lora
+```
+
+### Huggingface (for loading models and tokenizers) and TRL (for training)
+```code
+python main_hf_trl.py --lora
+# python main_hf_trladv.py --lora
+```
+
+### Huggingface (for loading models and tokenizers) Unsloth (for model optimization with LoRA) and TRL (for training)
+```code
+python main_unsloth_trl.py --lora
+# python main_unsloth_trladv.py --lora
+```
+
+
+
 # References
 - [LitGPT](litgpt/tutorials/finetune_full.md)
 - [Unsloth](https://docs.unsloth.ai/get-started/fine-tuning-llms-guide)

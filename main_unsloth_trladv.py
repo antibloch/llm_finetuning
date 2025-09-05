@@ -4,9 +4,15 @@ from utils.param_counter import *
 from train.trl_trainer_adv import *
 from evaluation.evaluate import *
 import yaml
+import argparse
 
 
-def main():
+def main(args):
+    if args.lora:
+        do_lora = True
+    else:
+        do_lora = False
+
     config_path = "config/config.yaml"
 
     # Open the config file and load its contents
@@ -14,7 +20,7 @@ def main():
         config = yaml.safe_load(file) # Use safe_load for security
 
     # Load the model and tokenizer
-    model, tokenizer = get_model_stuff(config, do_lora=False)
+    model, tokenizer = get_model_stuff(config, do_lora=do_lora)
 
     # Load and preprocess the dataset
     dataset = dataset_loader(tokenizer, split='train')
@@ -49,7 +55,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Fine-tune a language model using LoRA and TRL.")
+    parser.add_argument('--lora', action='store_true', help="Use LoRA for fine-tuning.")
+    args = parser.parse_args()
+    main(args)
 
 
 
