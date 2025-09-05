@@ -4,6 +4,62 @@ from tqdm import tqdm
 import re
 from typing import Tuple, Optional
 
+def print_beautiful_example(input_prompt, generated_output, predicted_answer, correct_answer, example_num, is_correct):
+    """
+    Print a beautifully formatted example showing input prompt and model output.
+    """
+    # Color codes for terminal output
+    GREEN = '\033[92m'
+    RED = '\033[91m'
+    BLUE = '\033[94m'
+    CYAN = '\033[96m'
+    YELLOW = '\033[93m'
+    BOLD = '\033[1m'
+    RESET = '\033[0m'
+    
+    # Choose color based on correctness
+    result_color = GREEN if is_correct else RED
+    result_symbol = "✓" if is_correct else "✗"
+    
+    print(f"\n{BOLD}{'='*80}{RESET}")
+    print(f"{BOLD}{CYAN}EXAMPLE {example_num}{RESET}")
+    print(f"{BOLD}{'='*80}{RESET}")
+    
+    # Parse and display the input prompt nicely
+    print(f"{BOLD}{BLUE}INPUT PROMPT:{RESET}")
+    print(f"{'-'*40}")
+    
+    # Split the prompt to extract question and choices
+    try:
+        parts = input_prompt.split("### Question:")
+        if len(parts) > 1:
+            question_part = parts[1].split("### Choices:")[0].strip()
+            choices_part = parts[1].split("### Choices:")[1].split("### Answer:")[0].strip()
+            
+            print(f"{BOLD}Question:{RESET}")
+            print(f"  {question_part}")
+            print(f"\n{BOLD}Choices:{RESET}")
+            for line in choices_part.split('\n'):
+                if line.strip():
+                    print(f"  {line.strip()}")
+        else:
+            # Fallback if parsing fails
+            print(f"  {input_prompt[:200]}...")
+    except:
+        print(f"  {input_prompt[:200]}...")
+    
+    print(f"\n{BOLD}{YELLOW}MODEL OUTPUT:{RESET}")
+    print(f"{'-'*40}")
+    print(f"  Generated: '{generated_output}'")
+    
+    print(f"\n{BOLD}EVALUATION:{RESET}")
+    print(f"{'-'*40}")
+    print(f"  Predicted Answer: {BOLD}{predicted_answer}{RESET}")
+    print(f"  Correct Answer:   {BOLD}{correct_answer}{RESET}")
+    print(f"  Result: {result_color}{BOLD}{result_symbol} {'CORRECT' if is_correct else 'INCORRECT'}{RESET}")
+    
+    print(f"{BOLD}{'='*80}{RESET}")
+
 def extract_answer_from_generation(text, choices=['A', 'B', 'C', 'D', 'E']):
     """
     Extract the answer choice from generated text.
@@ -31,10 +87,9 @@ def extract_answer_from_generation(text, choices=['A', 'B', 'C', 'D', 'E']):
     
     return None
 
-def evaluate_trained_model(model, tokenizer, test_dataset, batch_size=8, max_samples=None):
+def evaluate_trained_model(model, tokenizer, test_dataset, batch_size=8, max_samples=None, show_examples=3):
     """
     Evaluate a trained model (in memory) on CSQA dataset.
-    SAFELY preserves the original model state.
     
     Args:
         model: Trained PyTorch model
@@ -42,57 +97,55 @@ def evaluate_trained_model(model, tokenizer, test_dataset, batch_size=8, max_sam
         test_dataset: Test/validation dataset
         batch_size: Batch size for evaluation
         max_samples: Limit number of samples (for quick testing)
+        show_examples: Number of examples to display beautifully (default: 3)
     
     Returns:
         Dict with evaluation results
     """
-    # IMPORTANT: Save the original training state
-    original_training_mode = model.training
+    model.eval()
+    device = next(model.parameters()).device
     
-    try:
-        # Set to evaluation mode
-        model.eval()
-        device = next(model.parameters()).device
-        
-        # Limit samples if specified
-        if max_samples:
-            test_dataset = test_dataset.select(range(min(max_samples, len(test_dataset))))
-        
-        print(f"Evaluating on {len(test_dataset)} samples...")
-        
-        # Create dataloader
-        dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
-        
-        correct = 0
-        total = 0
-        total_loss = 0
-        total_tokens = 0
-        
-        with torch.no_grad():
-            for batch_idx, batch in enumerate(tqdm(dataloader, desc="Evaluating")):
-                batch_texts = batch['text']
-                
-                # Get answer keys - handle different possible field names
-                batch_answers = None
-                for key in ['answerKey', 'answer', 'label']:
-                    if key in batch:
-                        batch_answers = batch[key]
-                        break
-                
-                if batch_answers is None:
-                    print("Warning: No answer key found in dataset")
+    # Limit samples if specified
+    if max_samples:
+        test_dataset = test_dataset.select(range(min(max_samples, len(test_dataset))))
+    
+    print(f"Evaluating on {len(test_dataset)} samples...")
+    print(f"Will display first {show_examples} examples with detailed formatting")
+    
+    # Create dataloader
+    dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    
+    correct = 0
+    total = 0
+    total_loss = 0
+    total_tokens = 0
+    
+    with torch.no_grad():
+        for batch_idx, batch in enumerate(tqdm(dataloader, desc="Evaluating")):
+            batch_texts = batch['text']
+            
+            # Get answer keys - handle different possible field names
+            batch_answers = None
+            for key in ['answerKey', 'answer', 'label']:
+                if key in batch:
+                    batch_answers = batch[key]
                     break
-                
-                # Tokenize inputs
-                inputs = tokenizer(
-                    batch_texts, 
-                    return_tensors='pt', 
-                    padding=True, 
-                    truncation=True, 
-                    max_length=2048
-                ).to(device)
-                
-                # 1. ACCURACY EVALUATION: Generate responses
+            
+            if batch_answers is None:
+                print("Warning: No answer key found in dataset")
+                break
+            
+            # Tokenize inputs
+            inputs = tokenizer(
+                batch_texts, 
+                return_tensors='pt', 
+                padding=True, 
+                truncation=True, 
+                max_length=2048
+            ).to(device)
+            
+            # 1. ACCURACY EVALUATION: Generate responses
+            with torch.no_grad():
                 outputs = model.generate(
                     **inputs,
                     max_new_tokens=10,  # Short generation for answer
@@ -101,116 +154,61 @@ def evaluate_trained_model(model, tokenizer, test_dataset, batch_size=8, max_sam
                     temperature=1.0,
                     top_p=1.0
                 )
+            
+            # Extract generated text (remove input)
+            generated_texts = []
+            for i, output in enumerate(outputs):
+                input_length = inputs['input_ids'][i].shape[0]
+                generated_ids = output[input_length:]
+                generated_text = tokenizer.decode(generated_ids, skip_special_tokens=True)
+                generated_texts.append(generated_text)
+            
+            # Check answers
+            for i, (generated, correct_answer) in enumerate(zip(generated_texts, batch_answers)):
+                predicted_answer = extract_answer_from_generation(generated)
                 
-                # Extract generated text (remove input)
-                generated_texts = []
-                for i, output in enumerate(outputs):
-                    input_length = inputs['input_ids'][i].shape[0]
-                    generated_ids = output[input_length:]
-                    generated_text = tokenizer.decode(generated_ids, skip_special_tokens=True)
-                    generated_texts.append(generated_text)
+                if predicted_answer == correct_answer:
+                    correct += 1
+                total += 1
                 
-                # Check answers
-                for i, (generated, correct_answer) in enumerate(zip(generated_texts, batch_answers)):
-                    predicted_answer = extract_answer_from_generation(generated)
-                    
-                    if predicted_answer == correct_answer:
-                        correct += 1
-                    total += 1
-                    
-                    # Debug: print first few examples from first batch
-                    if batch_idx == 0 and i < 3:
-                        print(f"Example {total}:")
-                        print(f"  Generated: '{generated.strip()}'")
-                        print(f"  Predicted: {predicted_answer}")
-                        print(f"  Correct: {correct_answer}")
-                        print(f"  Match: {predicted_answer == correct_answer}")
-                        print()
-                
-                # 2. PERPLEXITY EVALUATION: Compute loss
-                labels = inputs['input_ids'].clone()
-                labels[inputs['attention_mask'] == 0] = -100
-                
-                loss_outputs = model(**inputs, labels=labels)
-                loss = loss_outputs.loss
-                
-                # Calculate number of non-padded tokens
-                num_tokens = (labels != -100).sum().item()
-                
-                total_loss += loss.item() * num_tokens
-                total_tokens += num_tokens
-        
-        # Calculate final metrics
-        accuracy = correct / total if total > 0 else 0
-        avg_loss = total_loss / total_tokens if total_tokens > 0 else float('inf')
-        perplexity = torch.exp(torch.tensor(avg_loss)).item()
-        
-        results = {
-            'accuracy': accuracy,
-            'correct': correct,
-            'total': total,
-            'perplexity': perplexity,
-            'avg_loss': avg_loss
-        }
-        
-        return results
+                # Beautiful display of first few examples
+                if total <= show_examples:
+                    print_beautiful_example(
+                        batch_texts[i], 
+                        generated.strip(), 
+                        predicted_answer, 
+                        correct_answer, 
+                        total,
+                        predicted_answer == correct_answer
+                    )
+            
+            # 2. PERPLEXITY EVALUATION: Compute loss
+            labels = inputs['input_ids'].clone()
+            labels[inputs['attention_mask'] == 0] = -100
+            
+            loss_outputs = model(**inputs, labels=labels)
+            loss = loss_outputs.loss
+            
+            # Calculate number of non-padded tokens
+            num_tokens = (labels != -100).sum().item()
+            
+            total_loss += loss.item() * num_tokens
+            total_tokens += num_tokens
     
-    finally:
-        # CRITICAL: Restore the original training state
-        if original_training_mode:
-            model.train()
-        else:
-            model.eval()
-        
-        print(f"Model state restored to: {'training' if original_training_mode else 'evaluation'}")
-
-def evaluate_with_model_copy(model, tokenizer, test_dataset, batch_size=8, max_samples=None):
-    """
-    Alternative: Evaluate using a deep copy of the model (memory intensive).
-    Use this if you want absolute guarantee of no state changes.
-    """
-    import copy
+    # Calculate final metrics
+    accuracy = correct / total if total > 0 else 0
+    avg_loss = total_loss / total_tokens if total_tokens > 0 else float('inf')
+    perplexity = torch.exp(torch.tensor(avg_loss)).item()
     
-    print("Creating model copy for evaluation (this may take time and memory)...")
+    results = {
+        'accuracy': accuracy,
+        'correct': correct,
+        'total': total,
+        'perplexity': perplexity,
+        'avg_loss': avg_loss
+    }
     
-    # Create a deep copy of the model
-    model_copy = copy.deepcopy(model)
-    
-    try:
-        # Evaluate using the copy
-        results = evaluate_trained_model(model_copy, tokenizer, test_dataset, batch_size, max_samples)
-        return results
-    finally:
-        # Clean up the copy
-        del model_copy
-        torch.cuda.empty_cache()
-        print("Model copy deleted and cache cleared")
-
-def safe_model_evaluation_context(model):
-    """
-    Context manager for safe model evaluation.
-    Usage:
-        with safe_model_evaluation_context(model):
-            # Do evaluation here
-            results = some_evaluation_function(model, ...)
-    """
-    class ModelEvaluationContext:
-        def __init__(self, model):
-            self.model = model
-            self.original_training_mode = None
-        
-        def __enter__(self):
-            self.original_training_mode = self.model.training
-            self.model.eval()
-            return self.model
-        
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            if self.original_training_mode:
-                self.model.train()
-            else:
-                self.model.eval()
-    
-    return ModelEvaluationContext(model)
+    return results
 
 def print_evaluation_results(results, model_name="Trained Model"):
     """Print formatted evaluation results."""
@@ -224,14 +222,3 @@ def print_evaluation_results(results, model_name="Trained Model"):
     print(f"Perplexity: {results['perplexity']:.4f}")
     print(f"Average Loss: {results['avg_loss']:.4f}")
     print("=" * 60)
-
-# Example usage of the context manager approach:
-def evaluate_with_context_manager(model, tokenizer, test_dataset, batch_size=8, max_samples=None):
-    """
-    Example of using the context manager for evaluation.
-    """
-    with safe_model_evaluation_context(model):
-        # Your evaluation code here
-        results = evaluate_trained_model(model, tokenizer, test_dataset, batch_size, max_samples)
-    
-    return results
