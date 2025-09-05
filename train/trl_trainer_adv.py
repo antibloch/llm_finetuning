@@ -71,7 +71,7 @@ def train_with_trl(model, tokenizer, dataset, config, do_instrument=True):
 
     trainer = SFTTrainer(
         model = model,
-        tokenizer = tokenizer,
+        processing_class = tokenizer,
         train_dataset = dataset,
         dataset_text_field = "text",
         max_seq_length = max_seq_length,
