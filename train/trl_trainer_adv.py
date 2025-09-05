@@ -81,3 +81,6 @@ def train_with_trl(model, tokenizer, dataset, config, do_instrument=True):
 
     # Start training
     trainer.train()
+
+
+    return trainer

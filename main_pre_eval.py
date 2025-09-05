@@ -1,7 +1,7 @@
 from model.model_hf import *
 from dataset.csqa import load_dataset
 from utils.param_counter import *
-from train.trl_trainer_adv import *
+from train.trl_trainer import *
 from evaluation.evaluate import *
 import yaml
 
@@ -19,28 +19,27 @@ def main():
 
     # Load and preprocess the dataset
     dataset = load_dataset(tokenizer, split='train')
+    eval_dataset = load_dataset(tokenizer, split='validation')
 
-    # Train the model using TRL's SFTTrainer
-    trainer = train_with_trl(model, tokenizer, dataset, config, do_instrument=True)
+    print("Dataset sizes:")
+    print(f"  Training: {len(dataset)} samples")
+    print(f"  Evaluation: {len(eval_dataset)} samples")
 
-        # Extract the trained model for evaluation
-    trained_model = trainer.model
-
-    # EVALUATION AFTER TRAINING
+    # EVALUATION BEFORE TRAINING
     print("\n" + "="*60)
-    print("EVALUATION AFTER FINE-TUNING")
+    print("EVALUATION BEFORE FINE-TUNING (Baseline)")
     print("="*60)
-    # Evaluate the trained model
-    results = evaluate_trained_model(
-        trained_model, 
+    
+    baseline_results = evaluate_trained_model(
+        model, 
         tokenizer, 
         eval_dataset, 
-        batch_size=2,
-        max_samples=100  # num samples to evaluate
+        batch_size=config.get('per_device_batch_size', 8),
+        max_samples=100  # Quick evaluation for baseline
     )
     
-    # Print results
-    print_evaluation_results(results)
+    print_evaluation_results(baseline_results, model_name=f"{config['MODEL_NAME']} (Baseline)")
+
 
 
 if __name__ == "__main__":
