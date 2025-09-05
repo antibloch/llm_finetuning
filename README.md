@@ -51,8 +51,9 @@ python main_unsloth_trl.py
 
 ### Huggingface (for loading models and tokenizers) Unsloth (for model optimization with LoRA) and Torch Distributed (for training)
 ```code
-python main_unsloth_torch.py
-# python main_unsloth_torchadv.py
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+torchrun --nproc_per_node=4 --master_port=29500 main_unsloth_torch.py
+# torchrun --nproc_per_node=4 --master_port=29500  main_unsloth_torchadv.py
 ```
 
 
@@ -63,4 +64,6 @@ litgpt finetune_full meta-llama/Meta-Llama-3-8B-Instruct --config config.yaml
 ```
 
 # References
-- [LitGPT](litgpt/tutorials/finetune_full.md at main · Lightning-AI/litgpt · GitHub)
+- [LitGPT](litgpt/tutorials/finetune_full.md)
+- [Unsloth](https://docs.unsloth.ai/get-started/fine-tuning-llms-guide)
+- [Huggingface TRL](https://huggingface.co/docs/trl/index)
