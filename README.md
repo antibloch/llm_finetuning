@@ -11,6 +11,7 @@ conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvi
 pip install "unsloth[cu121-torch230]"
 pip install "transformers>=4.41.0" "datasets>=2.14.0" "accelerate>=0.29.0" "peft>=0.10.0" "trl>=0.8.6"
 pip install bitsandbytes sentencepiece protobuf xformers
+pip install PyYAML
 ```
 
 
@@ -50,7 +51,6 @@ python main_unsloth_trl.py
 python main_unsloth_torch.py
 # python main_unsloth_torchadv.py
 ```
-
 
 
 ### LitGPT
