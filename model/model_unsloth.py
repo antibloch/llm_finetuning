@@ -2,6 +2,7 @@ from unsloth import FastLanguageModel
 
 
 def get_model_stuff(config, do_lora=True):
+    # some hyperparameters
     MODEL_NAME = config['MODEL_NAME']
     max_seq_length = config['max_seq_length']
     dtype = config['dtype']

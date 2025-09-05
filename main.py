@@ -1,8 +1,8 @@
-from model.model import *
-from dataset.csqa import *
-from utils.util import *
+from model.model_unsloth import *
+from dataset.csqa import load_dataset
+from utils.param_counter import *
+from utils.trl_trainer import *
 import yaml
-import torch
 
 
 def main():
