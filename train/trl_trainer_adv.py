@@ -58,6 +58,7 @@ def train_with_trl(model, tokenizer, dataset, config, do_instrument=True):
         packing=False,
     
         report_to="none",
+        dataset_text_field="text",
     )
 
     callbacks = []
@@ -73,7 +74,6 @@ def train_with_trl(model, tokenizer, dataset, config, do_instrument=True):
         model = model,
         processing_class = tokenizer,
         train_dataset = dataset,
-        dataset_text_field = "text",
         max_seq_length = max_seq_length,
         args = sft_config,
         callbacks = callbacks,

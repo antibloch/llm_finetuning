@@ -24,7 +24,8 @@ def train_with_trl(model, tokenizer, dataset, config, do_instrument=True):
             max_steps = max_steps,
             optim = optim,
             output_dir = output_dir,
-            report_to = "none"
+            report_to = "none",
+            dataset_text_field="text",
         )
     
     if do_instrument:
@@ -38,7 +39,6 @@ def train_with_trl(model, tokenizer, dataset, config, do_instrument=True):
         model = model,
         processing_class = tokenizer,
         train_dataset = dataset,
-        dataset_text_field = "text",
         max_seq_length = max_seq_length,
         args = sft_config,
         callbacks = [callback] if do_instrument else None,
