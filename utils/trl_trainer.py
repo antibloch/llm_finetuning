@@ -18,7 +18,6 @@ def train_with_trl(model, tokenizer, dataset, config):
     sft_config = SFTConfig(
             per_device_train_batch_size = per_device_batch_size,
             gradient_accumulation_steps = gradient_accumulation_steps,
-            # A much lower learning rate is needed for full fine-tuning
             learning_rate = learning_rate,
             num_train_epochs = num_train_epochs,
             max_steps = max_steps,
