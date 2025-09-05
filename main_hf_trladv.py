@@ -36,9 +36,12 @@ def main():
         tokenizer, 
         eval_dataset, 
         batch_size=2,
-        max_samples=100  # num samples to evaluate
+        max_samples=100,  # num samples to evaluate
+        show_examples=5,  # print 5 random input-output pairs
+        max_new_tokens=10,  # Short generation for answer
+        temperature=0.0,    # Temperature (high temp for creative (less greedy))
+        top_p=0.9           # Nucleus sampling (small value for less diversity and more focused generations)
     )
-    
     # Print results
     print_evaluation_results(results)
 

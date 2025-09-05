@@ -87,7 +87,7 @@ def extract_answer_from_generation(text, choices=['A', 'B', 'C', 'D', 'E']):
     
     return None
 
-def evaluate_trained_model(model, tokenizer, test_dataset, batch_size=8, max_samples=None, show_examples=3):
+def evaluate_trained_model(model, tokenizer, test_dataset, batch_size=8, max_samples=None, show_examples=3, max_new_tokens=10, temperature=0.0, top_p=0.9):
     """
     Evaluate a trained model (in memory) on CSQA dataset.
     
@@ -148,11 +148,11 @@ def evaluate_trained_model(model, tokenizer, test_dataset, batch_size=8, max_sam
             with torch.no_grad():
                 outputs = model.generate(
                     **inputs,
-                    max_new_tokens=10,  # Short generation for answer
+                    max_new_tokens=max_new_tokens,  # Short generation for answer
                     do_sample=False,    # Deterministic for evaluation
                     pad_token_id=tokenizer.eos_token_id,
-                    temperature=1.0,
-                    top_p=1.0
+                    temperature=temperature,
+                    top_p=top_p
                 )
             
             # Extract generated text (remove input)

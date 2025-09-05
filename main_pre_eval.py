@@ -35,7 +35,10 @@ def main():
         eval_dataset, 
         batch_size=config.get('per_device_batch_size', 8),
         max_samples=100,  # num samples to evaluate
-        show_examples=5  # print 5 random input-output pairs
+        show_examples=5,  # print 5 random input-output pairs
+        max_new_tokens=10,  # Short generation for answer
+        temperature=0.0,    # Temperature (high temp for creative (less greedy))
+        top_p=0.9           # Nucleus sampling (small value for less diversity and more focused generations)
     )
     
     print_evaluation_results(baseline_results, model_name=f"{config['MODEL_NAME']} (Baseline)")
