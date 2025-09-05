@@ -1,7 +1,9 @@
 from trl import SFTTrainer, SFTConfig
+from utils.param_counter import count_parameters
+from utils.vram_instrumentation import VRAMMonitorCallback, print_vram_summary
 
 
-def train_with_trl(model, tokenizer, dataset, config):
+def train_with_trl(model, tokenizer, dataset, config, do_instrument=True):
     """
     Trains the model using TRL's SFTTrainer.
     """
@@ -25,6 +27,13 @@ def train_with_trl(model, tokenizer, dataset, config):
             output_dir = output_dir,
             report_to = "none"
         )
+    
+    if do_instrument:
+        callback = VRAMMonitorCallback(
+            detailed_logging=True,
+            track_per_step=True, 
+            step_interval=50
+        )
 
     trainer = SFTTrainer(
         model = model,
@@ -33,6 +42,7 @@ def train_with_trl(model, tokenizer, dataset, config):
         dataset_text_field = "text",
         max_seq_length = max_seq_length,
         args = sft_config,
+        callbacks = [callback] if do_instrument else None,
     )
 
     # Start training

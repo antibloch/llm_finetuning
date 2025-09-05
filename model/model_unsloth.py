@@ -1,4 +1,6 @@
 from unsloth import FastLanguageModel
+from utils.param_counter import count_parameters
+from utils.vram_instrumentation import vram_checkpoint, VRAMTracker, print_vram_summary
 
 
 def get_model_stuff(config, do_lora=True):
@@ -7,6 +9,10 @@ def get_model_stuff(config, do_lora=True):
     max_seq_length = config['max_seq_length']
     dtype = config['dtype']
     load_in_4bit = config['load_in_4bit']
+    load_in_8bit = config['load_in_8bit']
+
+    tracker = VRAMTracker()
+    tracker.snapshot("Before loading model and tokenizer")
 
     # Load the model and tokenizer using Unsloth
     model, tokenizer = FastLanguageModel.from_pretrained(
@@ -14,6 +20,7 @@ def get_model_stuff(config, do_lora=True):
         max_seq_length = max_seq_length,
         dtype = dtype,
         load_in_4bit = load_in_4bit,
+        load_in_8bit = load_in_8bit,
     )
 
     # Add LoRA adapters to make it trainable (but if it is full-finetuning, skip this step)
@@ -35,6 +42,13 @@ def get_model_stuff(config, do_lora=True):
             use_gradient_checkpointing = use_gradient_checkpointing,
             random_state = random_state,
         )
+
+
+    # instrument params
+    tracker.snapshot("After loading model and tokenizer")
+    tracker.print_history()
+    count_parameters(model)
+    print_vram_summary()
 
 
     return model, tokenizer

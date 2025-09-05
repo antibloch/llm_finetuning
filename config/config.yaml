@@ -3,6 +3,7 @@ DATASET_NAME: "commonsense_qa" # Dataset name from Huggingface datasets
 max_seq_length: 2048 # Maximum sequence length for the model
 dtype: null # Autodetects for your GPU
 load_in_4bit: true # Use 4-bit quantization
+load_in_8bit: false # Use 8-bit quantization
 
 # LoRA specific parameters
 lora_alpha: 16
@@ -19,8 +20,6 @@ gradient_accumulation_steps: 4
 max_steps: 60
 output_dir: "outputs"
 optim: "adamw_8bit" # "adamw_hf" or "adamw_8bit" or "adamw_torch" or "paged_adamw_32bit"
-
-# Additional training parameters
 num_train_epochs: 1
 weight_decay: 0.01
 max_grad_norm: 1.0

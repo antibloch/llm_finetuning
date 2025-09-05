@@ -1,7 +1,7 @@
 from model.model_unsloth import *
 from dataset.csqa import load_dataset
 from utils.param_counter import *
-from utils.trl_trainer import *
+from train.trl_trainer import *
 import yaml
 
 
