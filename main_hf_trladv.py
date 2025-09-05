@@ -19,6 +19,7 @@ def main():
 
     # Load and preprocess the dataset
     dataset = load_dataset(tokenizer, split='train')
+    eval_dataset = load_dataset(tokenizer, split='validation')
 
     # Train the model using TRL's SFTTrainer
     trainer = train_with_trl(model, tokenizer, dataset, config, do_instrument=True)
