@@ -16,13 +16,20 @@ def get_model_stuff(config, do_lora=True, do_instrument=True):
 
     # load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    tokenizer.pad_token = tokenizer.eos_token
+    # tokenizer.pad_token = tokenizer.eos_token
+
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+
+    # Set padding side to left for decoder-only models
+    tokenizer.padding_side = 'left'
 
 
     # Load model
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_NAME,
-        torch_dtype=torch.bfloat16,
+        dtype=torch.bfloat16,
         device_map="auto",  # Distribute across all available GPUs
         trust_remote_code=True
     )
