@@ -3,7 +3,7 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer
 )
-from utils.param_counter import count_parameters
+from utils.param_counter import *
 from utils.vram_instrumentation import vram_checkpoint, VRAMTracker, print_vram_summary
 
 
@@ -57,7 +57,7 @@ def get_model_stuff(config, do_lora=True, do_instrument=True):
     if do_instrument:
         tracker.snapshot("After loading model and tokenizer")
         tracker.print_history()
-        count_parameters(model)
+        print_trainable_parameters(model)
         print_vram_summary()
 
 
