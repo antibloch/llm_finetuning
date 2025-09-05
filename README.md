@@ -6,11 +6,21 @@
 conda create --name llmer python=3.10 -y
 conda activate llmer
 
-conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia -y
+pip install torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 --index-url https://download.pytorch.org/whl/cu121
 
 pip install "unsloth[cu121-torch230]"
-pip install "transformers>=4.41.0" "datasets>=2.14.0" "accelerate>=0.29.0" "peft>=0.10.0" "trl>=0.8.6"
-pip install bitsandbytes sentencepiece protobuf xformers
+
+pip install scikit-learn scipy
+
+pip install transformers datasets accelerate
+
+pip install bitsandbytes peft
+
+pip install sentencepiece protobuf xformers
+pip install trl
+
+pip install flash-attn
+
 pip install PyYAML
 ```
 
