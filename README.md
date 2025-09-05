@@ -17,6 +17,39 @@ pip install git+https://github.com/huggingface/trl.git
 pip install PyYAML
 ```
 
+### Accelerate setup
+```code
+In which compute environment are you running?
+This machine
+----------------------------------------------------------------------------------------------------------
+Which type of machine are you using?
+multi-GPU
+How many different machines will you use (use more than 1 for multi-node training)? [1]: 1
+Should distributed operations be checked while running for errors? This can avoid timeout issues but will be slower. [yes/NO]: yes
+Do you wish to optimize your script with torch dynamo?[yes/NO]:NO
+Do you want to use DeepSpeed? [yes/NO]: NO
+Do you want to use FullyShardedDataParallel? [yes/NO]: yes
+----------------------------------------------------------------------------------------------------------
+What should be your FSDP version? [2]:
+2
+Do you want to enable resharding after forward? [YES/no]: YES
+Do you want to offload parameters and gradients to CPU? [yes/NO]: yes
+----------------------------------------------------------------------------------------------------------
+What should be your auto wrap policy?
+TRANSFORMER_BASED_WRAP
+Do you want to use the model's _no_split_modules to wrap. Only applicable for 🤗 Transformers [yes/NO]: yes
+----------------------------------------------------------------------------------------------------------
+What should be your FSDP's state dict type?
+SHARDED_STATE_DICT
+Do you want to enable CPU RAM efficient model loading? Only applicable for 🤗 Transformers models. [YES/no]: YES
+Do you want to enable FSDP activation checkpointing? [yes/NO]: yes
+Do you want to use the parallelism config? [yes/NO]: NO
+How many GPU(s) should be used for distributed training? [1]:4
+----------------------------------------------------------------------------------------------------------
+Do you wish to use mixed precision?
+bf16
+accelerate configuration saved at /home/junaid/.cache/huggingface/accelerate/default_config.yaml
+```
 
 
 ### LitGPT
@@ -41,6 +74,33 @@ python main_pre_eval.py
 python main_hf_trl.py
 # python main_hf_trladv.py
 ```
+
+### Huggingface (for loading models and tokenizers) and TRL (for training)
+```code
+# first run and setup for multi-GPU training
+accelerate config
+
+# Basic multi-GPU with Accelerate
+accelerate launch main_hf_trl_multi.py
+
+# With DeepSpeed for large models
+accelerate launch --config_file deepspeed_zero2.yaml main_hf_trl_multi.py
+
+accelerate launch --multi_gpu --num_processes=2 main_hf_trl_multi.py
+
+torchrun \ # python -m torch.distributed.run 
+    --nproc_per_node 2 \
+    --nnodes 2 \
+    --rdzv_id 2299 \ # A unique job id 
+    --rdzv_backend c10d \
+    --rdzv_endpoint master_node_ip_address:29500 \
+    main_hf_trl_multi.py
+
+
+torchrun --nproc_per_node=2 --nnodes=2 --rdzv_endpoint=master:29500 main_hf_trl_multi.py
+```
+
+
 
 ### Huggingface (for loading models and tokenizers) Unsloth (for model optimization with LoRA) and TRL (for training)
 ```code
