@@ -40,7 +40,7 @@ def format_commonsense_qa(examples, eos_token):
 
 
 
-def load_dataset(tokenizer, split='train'):
+def dataset_loader(tokenizer, split='train'):
     # Load the CommonsenseQA dataset from Hugging Face
     dataset = load_dataset("commonsense_qa", split=split)
     

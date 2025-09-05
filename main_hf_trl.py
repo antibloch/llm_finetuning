@@ -1,5 +1,5 @@
 from model.model_hf import *
-from dataset.csqa import load_dataset
+from dataset.csqa import dataset_loader
 from utils.param_counter import *
 from train.trl_trainer import *
 from evaluation.evaluate import *
@@ -18,8 +18,8 @@ def main():
     model, tokenizer = get_model_stuff(config, do_lora=False)
 
     # Load and preprocess the dataset
-    dataset = load_dataset(tokenizer, split='train')
-    eval_dataset = load_dataset(tokenizer, split='validation')
+    dataset = dataset_loader(tokenizer, split='train')
+    eval_dataset = dataset_loader(tokenizer, split='validation')
 
     print("Dataset sizes:")
     print(f"  Training: {len(dataset)} samples")
