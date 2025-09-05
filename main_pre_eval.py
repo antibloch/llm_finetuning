@@ -34,7 +34,8 @@ def main():
         tokenizer, 
         eval_dataset, 
         batch_size=config.get('per_device_batch_size', 8),
-        max_samples=100  # Quick evaluation for baseline
+        max_samples=100,  # num samples to evaluate
+        show_examples=5  # print 5 random input-output pairs
     )
     
     print_evaluation_results(baseline_results, model_name=f"{config['MODEL_NAME']} (Baseline)")
