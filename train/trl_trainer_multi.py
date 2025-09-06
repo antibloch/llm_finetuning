@@ -56,7 +56,7 @@ def train_with_trl(model, tokenizer, dataset, config, do_instrument=True):
         if deepspeed_config_path:
             print(f"  - DeepSpeed config: {deepspeed_config_path}")
     
-    # Create SFT configuration
+    # Create SFT configuration - FIXED: Use eval_strategy instead of evaluation_strategy
     sft_config = SFTConfig(
         # Core training parameters
         per_device_train_batch_size=per_device_batch_size,
@@ -67,9 +67,10 @@ def train_with_trl(model, tokenizer, dataset, config, do_instrument=True):
         optim=optim,
         output_dir=output_dir,
         
-        # Dataset and model parameters
+        # Dataset and model parameters - FIXED: moved from SFTTrainer to SFTConfig
         dataset_text_field="text",
-        max_length=max_seq_length,
+        max_seq_length=max_seq_length,  # FIXED: now passed here instead of max_length
+        packing=config.get('packing', False),  # FIXED: moved to SFTConfig
         
         # Multi-GPU configuration
         deepspeed=deepspeed_config_path if multi_gpu_backend == "deepspeed" else None,
@@ -100,8 +101,8 @@ def train_with_trl(model, tokenizer, dataset, config, do_instrument=True):
         adam_beta2=config.get('adam_beta2', 0.999),
         adam_epsilon=config.get('adam_epsilon', 1e-8),
         
-        # Evaluation settings (if applicable)
-        evaluation_strategy=config.get('evaluation_strategy', 'no'),
+        # FIXED: Changed evaluation_strategy to eval_strategy
+        eval_strategy=config.get('eval_strategy', 'no'),  # FIXED: renamed parameter
         eval_steps=config.get('eval_steps', 500),
         per_device_eval_batch_size=config.get('per_device_eval_batch_size', per_device_batch_size),
         
@@ -120,10 +121,10 @@ def train_with_trl(model, tokenizer, dataset, config, do_instrument=True):
         )
         callbacks.append(callback)
     
-    # Create trainer
+    # Create trainer - FIXED: Simplified parameters, moved most to SFTConfig
     trainer = SFTTrainer(
         model=model,
-        processing_class=tokenizer,
+        processing_class=tokenizer,  # FIXED: Use processing_class instead of tokenizer
         train_dataset=dataset,
         args=sft_config,
         callbacks=callbacks if callbacks else None,
@@ -169,6 +170,8 @@ def get_recommended_config(num_gpus=None, model_size="7b", gpu_memory_gb=24):
         'save_steps': 500,
         'logging_steps': 10,
         'dataloader_num_workers': 4,
+        'packing': False,  # Can be enabled for efficiency
+        'eval_strategy': 'no',  # FIXED: Use eval_strategy instead of evaluation_strategy
     }
     
     # Model size specific settings
@@ -205,4 +208,3 @@ def get_recommended_config(num_gpus=None, model_size="7b", gpu_memory_gb=24):
         config['gradient_checkpointing'] = True
     
     return config
-
