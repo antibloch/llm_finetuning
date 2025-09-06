@@ -171,7 +171,7 @@ def get_recommended_config(num_gpus=None, model_size="7b", gpu_memory_gb=24):
         'logging_steps': 10,
         'dataloader_num_workers': 4,
         'packing': False,  # Can be enabled for efficiency
-        'eval_strategy': 'no',  # FIXED: Use eval_strategy instead of evaluation_strategy
+        'eval_strategy': 'no',  
     }
     
     # Model size specific settings
